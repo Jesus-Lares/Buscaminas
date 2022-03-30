@@ -3,6 +3,8 @@ import sys
 
 from utils import *
 from ui import *
+from board import Board
+
 
 class Main():
     def __init__(self):
@@ -18,17 +20,38 @@ class Main():
         self.cursor = Cursor()  
         clock = pygame.time.Clock()
 
+        self.numMines=5 
+        self.numRows = 10
+        self.numCols = 10
+        #Creacion de la cabecera
         self.btnHeaderSettings, self.textNumMines = self.headerDesign() 
-        self.numMines=15
+        #Creacion del tablero
+        board = Board(self.numRows, self.numCols, self.numMines, WIDTH,HEIGHT-SIZE_HEADER)
 
         openInterface = True
+        playing = True
         while openInterface:
             clock.tick(60)
-            
+
             self.cursor.update() 
             self.btnHeaderSettings.update(self.screen,self.cursor)
             self.textNumMines.update(str(self.numMines).rjust(2, '0')) ##Posibilidad de mover el 2 al redondear el numero de bombas que se tiene
-            
+                
+            if(playing):
+                playing = board.play(self.screen)
+                if board.get_box_close() == board.get_num_bombs():
+                    playing=False 
+
+            else:
+                if board.get_box_close() == board.get_num_bombs():
+                    size = self.bigFont.size("GANASTE")
+                    texto = self.bigFont.render("GANASTE", 1, GREEN)
+                    self.screen.blit(texto, ((WIDTH/ 2) - (size[0] / 2), (HEIGHT / 2) - (size[1] / 2)))
+                else:
+                    size = self.bigFont.size("PERDISTE")
+                    texto = self.bigFont.render("PERDISTE", 1, RED)
+                    self.screen.blit(texto, ((WIDTH / 2) - (size[0] / 2), (HEIGHT / 2) - (size[1] / 2))) 
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
@@ -36,7 +59,6 @@ class Main():
                     if self.cursor.colliderect(self.btnHeaderSettings.getRect()):
                         print("click")
                         self.numMines-=1
-            
             pygame.display.flip()
         
 

@@ -27,3 +27,5 @@ GOLDEN        = (255  , 215   , 0  )
 BACKGROUND    = (219  , 226   , 239)
 HEADER        = (17   , 45    , 78 )
 PRIMARY       = (63   , 114   , 175)
+
+COLORS_BOXES = [GRAY, BLUE, GREEN, CYAN, MAGENTA, PURPLE, GOLDEN, WHITE,YELLOW,RED] # Color del valor del texto segun valor de la casilla
