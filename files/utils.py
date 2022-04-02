@@ -1,8 +1,23 @@
 
 # Measures
-WIDTH=400
-HEIGHT=400
-BORDER=4
+MEASURES={
+    "easy":{
+        "width":280,
+        "height":320,
+        "mines":7
+    },
+    "normal":{
+        "width":450,
+        "height":490,
+        "mines":15
+    },
+    "hard":{
+        "width":900,
+        "height":940,
+        "mines":30
+    }
+}
+
 SIZE_HEADER=40
 
 # Colors in RGB

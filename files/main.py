@@ -5,6 +5,8 @@ from utils import *
 from ui import *
 from board import Board
 
+numRows = MEASURES["normal"]["mines"]
+numCols = MEASURES["normal"]["mines"]
 
 class Main():
     def __init__(self):
@@ -12,24 +14,14 @@ class Main():
         # Declarar fuentes
         self.bigFont = pygame.font.SysFont("arial",25)
         self.smallFont = pygame.font.SysFont("arial",18)
-
-        self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption("Buscaminas")
-
-        self.screen.fill(BACKGROUND)
-        self.cursor = Cursor()  
         clock = pygame.time.Clock()
+        self.width,self.height,mines=MEASURES["normal"].values()
 
-        self.numMines=5 
-        self.numRows = 10
-        self.numCols = 10
-        #Creacion de la cabecera
-        self.btnHeaderSettings, self.textNumMines = self.headerDesign() 
-        #Creacion del tablero
-        board = Board(self.numRows, self.numCols, self.numMines, WIDTH,HEIGHT-SIZE_HEADER)
-
+        self.init_design(mines,numRows,numCols)
+        
         openInterface = True
-        playing = True
+        self.playing = True
         while openInterface:
             clock.tick(60)
 
@@ -37,44 +29,80 @@ class Main():
             self.btnHeaderSettings.update(self.screen,self.cursor)
             self.textNumMines.update(str(self.numMines).rjust(2, '0')) ##Posibilidad de mover el 2 al redondear el numero de bombas que se tiene
                 
-            if(playing):
-                playing = board.play(self.screen)
-                if board.get_box_close() == board.get_num_bombs():
-                    playing=False 
+            if(self.playing):
+                self.board.print_board(self.screen)
+                if self.board.get_box_close() == self.board.get_num_bombs():
+                    self.playing=False 
 
             else:
-                if board.get_box_close() == board.get_num_bombs():
+                if self.board.get_box_close() == self.board.get_num_bombs():
                     size = self.bigFont.size("GANASTE")
                     texto = self.bigFont.render("GANASTE", 1, GREEN)
-                    self.screen.blit(texto, ((WIDTH/ 2) - (size[0] / 2), (HEIGHT / 2) - (size[1] / 2)))
+                    self.screen.blit(texto, ((self.width/ 2) - (size[0] / 2), (self.height / 2) - (size[1] / 2)))
                 else:
+                    self.board.open_all_mines(self.screen)
                     size = self.bigFont.size("PERDISTE")
                     texto = self.bigFont.render("PERDISTE", 1, RED)
-                    self.screen.blit(texto, ((WIDTH / 2) - (size[0] / 2), (HEIGHT / 2) - (size[1] / 2))) 
+                    self.screen.blit(texto, ((self.width / 2) - (size[0] / 2), (self.height / 2) - (size[1] / 2))) 
 
             for event in pygame.event.get():
+                self.btns_playing(event)
+                    
                 if event.type == pygame.QUIT:
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if self.cursor.colliderect(self.btnHeaderSettings.getRect()):
-                        print("click")
-                        self.numMines-=1
+            
+
             pygame.display.flip()
         
+    def init_design(self,mines,rows,cols):
+        self.screen = pygame.display.set_mode((self.width,self.height))
+
+        self.screen.fill(BACKGROUND)
+        self.cursor = Cursor()  
+
+        self.numMines=mines 
+        self.numRows = rows
+        self.numCols = cols
+        #Creacion de la cabecera
+        self.btnHeaderSettings, self.textNumMines = self.headerDesign() 
+        #Creacion del tablero
+        self.board = Board(self.numRows, self.numCols, self.numMines, self.width,self.height-SIZE_HEADER)
 
     def headerDesign(self):
-        pygame.draw.rect(self.screen,HEADER,(0,0,WIDTH,SIZE_HEADER))
-
+        pygame.draw.rect(self.screen,HEADER,(0,0,self.width,SIZE_HEADER))
         #Numero de bombas
         imgMines = pygame.image.load("images/mina.png")
         pictureMines = pygame.transform.scale(imgMines,[40,40])
         self.screen.blit(pictureMines,[0,0])
         
         textNumMines = Text(self.screen,str(self.numMines),40,5,self.bigFont) 
-        btnSettings = Button(self.screen,"Opciones",WIDTH-110,7,self.smallFont)
+        btnSettings = Button(self.screen,"Opciones",self.width-110,7,self.smallFont)
         
         return btnSettings,textNumMines
 
+    def btns_playing(self,event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            position = self.cursor.get_pos()
+            if event.button == 1:
+                self.board.mouse_button_left_down(position[0],position[1])
+            elif event.button==3:
+                self.numMines += self.board.mouse_button_right_down(position[0],position[1])
 
+                
+        elif event.type == pygame.MOUSEMOTION:
+            position = self.cursor.get_pos()
+            self.board.mouse_motion_board(position[0],position[1])  
+        
+        #Evento para cuando dejas de presionar el boton izquierdo
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                position = self.cursor.get_pos()
+                if self.cursor.colliderect(self.btnHeaderSettings.getRect()):
+                    self.numMines-=1
+                    self.width,self.height,mines=MEASURES["easy"].values()
+                    self.init_design(mines,10,10)
+                self.playing = self.board.mouse_button_left_up(position[0],position[1])
+            
+                
 if __name__ == "__main__":
     Main()
