@@ -12,7 +12,6 @@ class Board:
         self.width = int(width/rows)
         self.height = int(height/columns)
         
-        self.pushed = False
         self.rows = rows #Numero de filas eje x
         self.columns = columns #Numero de columnas eje y
         self.x0 = self.y0 = 0
@@ -21,6 +20,7 @@ class Board:
         self.hide_mines = [] # Matriz 1xN
         self.board   = [] # Matriz MxN
         self.boxes = [] # Matriz 1xN
+        self.selection_mines = []# Matriz 1xN
         
         self.create_table_board()
         self.lay_mines(mines)
@@ -101,6 +101,10 @@ class Board:
             self.open_box(hide_mine[0], hide_mine[1]) 
         self.print_board( screen)
     
+    def compare_mines(self):
+        return sorted(self.hide_mines) == sorted(self.selection_mines)
+
+    # Funciones para el uso del mouse
     def change_status_box(self,x,y,new_status=1,status=[3,4]):
         if 0<=x < self.rows and 0<= y < self.columns:
             if self.boxes[y* self.columns +x].get_status() not in status :
@@ -119,14 +123,12 @@ class Board:
             self.yy = y 
 
     def mouse_button_left_down(self,positionX,positionY):
-        self.pushed = True
         self.xx = self.x0 = int(positionX // self.width)
         self.yy = self.y0 = int(positionY // (self.height))-1
         self.change_status_box(self.xx,self.yy,2)
 
     def mouse_button_left_up(self,positionX,positionY):
         playing=True
-        self.pushed = False
         x = int(positionX // self.width)
         y = int(positionY // (self.height))-1
         if len(self.boxes)!= 0 and y>=0:
@@ -134,10 +136,19 @@ class Board:
                 playing = self.open_box(x, y) 
         return playing
 
-    def mouse_button_right_down(self,positionX,positionY):
-        self.pushed = True
+    def mouse_button_right_down(self,positionX,positionY,numMines):
         self.xx = self.x0 = int(positionX // self.width)
         self.yy = self.y0 = int(positionY // (self.height))-1
+
+        if self.boxes[self.yy* self.columns +self.xx].get_status() == 3 or self.yy<0: return 0
+        
         new_status = 4 if self.boxes[self.yy* self.columns +self.xx].get_status() not in [4,3] else 1 
+        if new_status == 4 and numMines<=0:
+            return 0
+        if new_status == 4:
+            self.selection_mines.append((self.xx,self.yy))
+        else:
+            self.selection_mines.remove((self.xx,self.yy))
+
         self.change_status_box(self.xx,self.yy,new_status,[3])
         return -1 if new_status == 4 else 1

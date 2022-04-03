@@ -14,15 +14,6 @@ class Box():
         self.status = status # Estado de la casilla SIN MARCAR, CURSOR_ENCIMA, MARCADA.
         self.value = value # Valor de la casilla ' ', '0'...'8' bomba
 
-
-
-    def is_touched(self, x, y):
-        if x >= self.x and x <= self.x + self.size_x and y > self.y and y < self.y + self.size_y:
-            retorno = True
-        else:
-            retorno = False
-        return retorno
-
     def set_status(self, status):
         self.status = status
 
@@ -47,5 +38,9 @@ class Box():
                 size = self.font.size(self.value)
                 texto = self.font.render(self.value, 1, COLORS_BOXES[int(self.value)])
                 screen.blit(texto, (self.x + (self.size_x / 2) - (size[0] / 2), self.y + (self.size_y / 2) - (size[1] / 2)))
-        
+        elif self.status == 4: # FLAG
+            pygame.gfxdraw.box(screen, (self.x, self.y, self.size_x, self.size_y), colorBox)
+            imgFlag = pygame.image.load("images/flag.png")
+            pictureFlag = pygame.transform.scale(imgFlag,[20,20])
+            screen.blit(pictureFlag, (self.x + (self.size_x / 2) - (pictureFlag.get_width()/2), self.y + (self.size_y / 2) - (pictureFlag.get_height()/2)))
 

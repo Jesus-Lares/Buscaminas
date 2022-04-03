@@ -22,6 +22,7 @@ class Main():
         
         openInterface = True
         self.playing = True
+        self.win = True
         while openInterface:
             clock.tick(60)
 
@@ -29,13 +30,20 @@ class Main():
             self.btnHeaderSettings.update(self.screen,self.cursor)
             self.textNumMines.update(str(self.numMines).rjust(2, '0')) ##Posibilidad de mover el 2 al redondear el numero de bombas que se tiene
                 
+
+            for event in pygame.event.get():
+                self.btns_playing(event)
+                    
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
             if(self.playing):
                 self.board.print_board(self.screen)
-                if self.board.get_box_close() == self.board.get_num_bombs():
-                    self.playing=False 
+                self.end_game()
+                
 
             else:
-                if self.board.get_box_close() == self.board.get_num_bombs():
+                if self.win:
                     size = self.bigFont.size("GANASTE")
                     texto = self.bigFont.render("GANASTE", 1, GREEN)
                     self.screen.blit(texto, ((self.width/ 2) - (size[0] / 2), (self.height / 2) - (size[1] / 2)))
@@ -44,13 +52,6 @@ class Main():
                     size = self.bigFont.size("PERDISTE")
                     texto = self.bigFont.render("PERDISTE", 1, RED)
                     self.screen.blit(texto, ((self.width / 2) - (size[0] / 2), (self.height / 2) - (size[1] / 2))) 
-
-            for event in pygame.event.get():
-                self.btns_playing(event)
-                    
-                if event.type == pygame.QUIT:
-                    sys.exit()
-            
 
             pygame.display.flip()
         
@@ -86,9 +87,8 @@ class Main():
             if event.button == 1:
                 self.board.mouse_button_left_down(position[0],position[1])
             elif event.button==3:
-                self.numMines += self.board.mouse_button_right_down(position[0],position[1])
+                self.numMines += self.board.mouse_button_right_down(position[0],position[1],self.numMines)
 
-                
         elif event.type == pygame.MOUSEMOTION:
             position = self.cursor.get_pos()
             self.board.mouse_motion_board(position[0],position[1])  
@@ -103,6 +103,14 @@ class Main():
                     self.init_design(mines,10,10)
                 self.playing = self.board.mouse_button_left_up(position[0],position[1])
             
-                
+    def end_game(self):
+        if self.numMines==0:
+            if self.board.compare_mines():
+                self.playing=False 
+                self.win = True    
+        if self.board.get_box_close() == self.board.get_num_bombs():
+            self.playing=False 
+            self.win = True
+
 if __name__ == "__main__":
     Main()
